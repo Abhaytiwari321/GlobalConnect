@@ -45,7 +45,8 @@ app.get('/api/health', (req, res) => {
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(join(__dirname, "../frontend/dist")));
 
-  app.get("*", (req, res) => {
+  // FIXED: was "*" → now "/*"
+  app.get("/*", (req, res) => {
     res.sendFile(join(__dirname, "../frontend/dist/index.html"));
   });
 }
