@@ -47,7 +47,7 @@ const PeopleCard: React.FC<PeopleCardProps> = ({ user, onConnect, onMessage }) =
         {/* Skills Preview */}
         <div className="mb-4">
           <div className="flex flex-wrap justify-center gap-1">
-            {user.skills.slice(0, 3).map((skill, index) => (
+            {Array.isArray(user.skills) && user.skills.slice(0, 3).map((skill, index) => (
               <span
                 key={index}
                 className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
@@ -55,7 +55,7 @@ const PeopleCard: React.FC<PeopleCardProps> = ({ user, onConnect, onMessage }) =
                 {skill}
               </span>
             ))}
-            {user.skills.length > 3 && (
+            {Array.isArray(user.skills) && user.skills.length > 3 && (
               <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
                 +{user.skills.length - 3} more
               </span>
@@ -67,15 +67,15 @@ const PeopleCard: React.FC<PeopleCardProps> = ({ user, onConnect, onMessage }) =
         <div className="flex space-x-2">
           <button
             onClick={() => onConnect(user.id)}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-              user.isConnected
-                ? 'bg-gray-200 text-gray-700 cursor-not-allowed'
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center text-sm ${
+              user.isConnected || user.isPending
+                ? 'bg-gray-150 text-gray-505 cursor-not-allowed'
                 : 'bg-emerald-600 text-white hover:bg-emerald-700'
             }`}
-            disabled={user.isConnected}
+            disabled={user.isConnected || user.isPending}
           >
-            <UserPlus className="w-4 h-4 inline mr-1" />
-            {user.isConnected ? 'Connected' : 'Connect'}
+            <UserPlus className="w-4 h-4 mr-1" />
+            {user.isConnected ? 'Connected' : user.isPending ? 'Pending' : user.hasIncoming ? 'Accept' : 'Connect'}
           </button>
           
           <button

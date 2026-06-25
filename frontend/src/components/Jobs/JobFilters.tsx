@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Filter, MapPin, DollarSign, Clock, Building } from 'lucide-react';
 
 interface JobFiltersProps {
@@ -9,6 +9,29 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFiltersChange }) => {
   const jobTypes = ['full-time', 'part-time', 'contract', 'remote'];
   const experienceLevels = ['Entry Level', 'Mid Level', 'Senior Level', 'Executive'];
   const salaryRanges = ['$0-50k', '$50k-100k', '$100k-150k', '$150k+'];
+
+  const [location, setLocation] = useState('');
+  const [type, setType] = useState('all');
+  const [experienceLevel, setExperienceLevel] = useState('all');
+  const [salaryRange, setSalaryRange] = useState('all');
+
+  const handleApply = () => {
+    onFiltersChange({
+      location,
+      type,
+      experienceLevel,
+      salaryRange,
+      remote: type === 'remote'
+    });
+  };
+
+  const handleClear = () => {
+    setLocation('');
+    setType('all');
+    setExperienceLevel('all');
+    setSalaryRange('all');
+    onFiltersChange({});
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -27,6 +50,8 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFiltersChange }) => {
           <input
             type="text"
             placeholder="Enter city or remote"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
@@ -37,19 +62,16 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFiltersChange }) => {
             <Clock className="w-4 h-4 mr-2 text-emerald-600" />
             Job Type
           </label>
-          <div className="space-y-2">
-            {jobTypes.map((type) => (
-              <label key={type} className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="ml-2 text-sm text-gray-700 capitalize">
-                  {type.replace('-', ' ')}
-                </span>
-              </label>
+          <select 
+            value={type} 
+            onChange={(e) => setType(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          >
+            <option value="all">All Types</option>
+            {jobTypes.map((t) => (
+              <option key={t} value={t}>{t.replace('-', ' ')}</option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Experience Level */}
@@ -58,17 +80,16 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFiltersChange }) => {
             <Building className="w-4 h-4 mr-2 text-emerald-600" />
             Experience Level
           </label>
-          <div className="space-y-2">
+          <select 
+            value={experienceLevel} 
+            onChange={(e) => setExperienceLevel(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          >
+            <option value="all">All Levels</option>
             {experienceLevels.map((level) => (
-              <label key={level} className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">{level}</span>
-              </label>
+              <option key={level} value={level}>{level}</option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Salary Range */}
@@ -77,26 +98,25 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFiltersChange }) => {
             <DollarSign className="w-4 h-4 mr-2 text-emerald-600" />
             Salary Range
           </label>
-          <div className="space-y-2">
+          <select 
+            value={salaryRange} 
+            onChange={(e) => setSalaryRange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          >
+            <option value="all">All Ranges</option>
             {salaryRanges.map((range) => (
-              <label key={range} className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">{range}</span>
-              </label>
+              <option key={range} value={range}>{range}</option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Apply Filters Button */}
-        <button className="w-full py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+        <button onClick={handleApply} className="w-full py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
           Apply Filters
         </button>
 
         {/* Clear Filters */}
-        <button className="w-full py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors font-medium">
+        <button onClick={handleClear} className="w-full py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors font-medium">
           Clear All Filters
         </button>
       </div>

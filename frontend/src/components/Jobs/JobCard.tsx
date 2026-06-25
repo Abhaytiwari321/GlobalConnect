@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Clock, Users, Bookmark, ExternalLink } from 'lucide-react';
 import { Job } from '../../types';
 
@@ -9,6 +9,7 @@ interface JobCardProps {
 }
 
 const JobCard: React.FC<JobCardProps> = ({ job, onApply, onSave }) => {
+  const [showFullDetails, setShowFullDetails] = useState(false);
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'remote':
@@ -71,10 +72,16 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply, onSave }) => {
       {/* Job Details */}
       <div className="mb-4">
         <div className="flex items-center space-x-3 mb-3">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getTypeColor(job.type)}`}>
-            {job.type.replace('-', ' ')}
+          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getTypeColor(job.type || '')}`}>
+            {job.type?.replace('-', ' ') || 'Unknown'}
           </span>
-          <span className="text-emerald-600 font-semibold text-lg">{job.salary}</span>
+          <span className="text-emerald-600 font-semibold text-lg">
+            {typeof job.salary === 'string' 
+              ? job.salary 
+              : job.salary 
+                ? `${job.salary.min ? '$' + (job.salary.min/1000) + 'k' : ''} ${job.salary.max ? '- $' + (job.salary.max/1000) + 'k' : ''}`
+                : 'Not specified'}
+          </span>
         </div>
 
         <p className="text-gray-700 leading-relaxed mb-4">{job.description}</p>
@@ -82,14 +89,57 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply, onSave }) => {
         <div className="mb-4">
           <h4 className="font-semibold text-gray-900 mb-2">Key Requirements:</h4>
           <ul className="space-y-1">
-            {job.requirements.map((req, index) => (
+            {Array.isArray(job.requirements) ? job.requirements.map((req, index) => (
               <li key={index} className="flex items-start space-x-2 text-gray-700">
                 <span className="text-emerald-500 mt-1.5">•</span>
                 <span className="text-sm">{req}</span>
               </li>
-            ))}
+            )) : job.requirements ? (
+              <li className="flex items-start space-x-2 text-gray-700">
+                <span className="text-emerald-500 mt-1.5">•</span>
+                <span className="text-sm">{job.requirements}</span>
+              </li>
+            ) : null}
           </ul>
         </div>
+
+        {showFullDetails && job.responsibilities && job.responsibilities.length > 0 && (
+          <div className="mb-4 border-t pt-4">
+            <h4 className="font-semibold text-gray-900 mb-2">Responsibilities:</h4>
+            <ul className="space-y-1">
+              {Array.isArray(job.responsibilities) ? job.responsibilities.map((resp, index) => (
+                <li key={index} className="flex items-start space-x-2 text-gray-700">
+                  <span className="text-blue-500 mt-1.5">•</span>
+                  <span className="text-sm">{resp}</span>
+                </li>
+              )) : (
+                <li className="flex items-start space-x-2 text-gray-700">
+                  <span className="text-blue-500 mt-1.5">•</span>
+                  <span className="text-sm">{job.responsibilities}</span>
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+
+        {showFullDetails && job.benefits && job.benefits.length > 0 && (
+          <div className="mb-4 border-t pt-4">
+            <h4 className="font-semibold text-gray-900 mb-2">Benefits:</h4>
+            <ul className="space-y-1">
+              {Array.isArray(job.benefits) ? job.benefits.map((benefit, index) => (
+                <li key={index} className="flex items-start space-x-2 text-gray-700">
+                  <span className="text-purple-500 mt-1.5">•</span>
+                  <span className="text-sm">{benefit}</span>
+                </li>
+              )) : (
+                <li className="flex items-start space-x-2 text-gray-700">
+                  <span className="text-purple-500 mt-1.5">•</span>
+                  <span className="text-sm">{job.benefits}</span>
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
 
         <div className="flex items-center space-x-1 text-gray-600 mb-4">
           <Users className="w-4 h-4" />
@@ -111,9 +161,12 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply, onSave }) => {
           {job.isApplied ? 'Applied' : 'Apply Now'}
         </button>
         
-        <button className="px-4 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2">
+        <button 
+          onClick={() => setShowFullDetails(!showFullDetails)}
+          className="px-4 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2"
+        >
           <ExternalLink className="w-4 h-4" />
-          <span className="font-medium">View Details</span>
+          <span className="font-medium">{showFullDetails ? 'Hide Details' : 'View Details'}</span>
         </button>
       </div>
     </div>

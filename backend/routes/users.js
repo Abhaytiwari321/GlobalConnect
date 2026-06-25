@@ -294,8 +294,13 @@ router.get('/', auth, async (req, res) => {
     // Check connection status for each user
     const currentUser = await User.findById(req.user._id);
     const usersWithConnectionStatus = users.map(user => {
-      const isConnected = currentUser.connections.some(
-        conn => conn.user.toString() === user._id.toString() && conn.status === 'accepted'
+      const connection = currentUser.connections.find(
+        conn => conn.user.toString() === user._id.toString()
+      );
+      const isConnected = connection ? connection.status === 'accepted' : false;
+      const isPending = connection ? connection.status === 'pending' : false;
+      const hasIncoming = currentUser.connectionRequests.some(
+        r => r.from.toString() === user._id.toString()
       );
       
       // Calculate mutual connections (mock for now)
@@ -314,6 +319,8 @@ router.get('/', auth, async (req, res) => {
         experience: user.experience,
         connections: user.connectionCount,
         isConnected,
+        isPending,
+        hasIncoming,
         mutualConnections,
       };
     });
@@ -344,8 +351,13 @@ router.get('/:id', auth, async (req, res) => {
     }
 
     const currentUser = await User.findById(req.user._id);
-    const isConnected = currentUser.connections.some(
-      conn => conn.user.toString() === user._id.toString() && conn.status === 'accepted'
+    const connection = currentUser.connections.find(
+      conn => conn.user.toString() === user._id.toString()
+    );
+    const isConnected = connection ? connection.status === 'accepted' : false;
+    const isPending = connection ? connection.status === 'pending' : false;
+    const hasIncoming = currentUser.connectionRequests.some(
+      r => r.from.toString() === user._id.toString()
     );
 
     res.json({
@@ -361,6 +373,8 @@ router.get('/:id', auth, async (req, res) => {
       experience: user.experience,
       connections: user.connectionCount,
       isConnected,
+      isPending,
+      hasIncoming,
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -440,7 +454,7 @@ router.post('/connection-requests/:id/accept', auth, async (req, res) => {
     const currentUser = await User.findById(req.user._id);
     
     const requestIndex = currentUser.connectionRequests.findIndex(
-      req => req._id.toString() === requestId
+      req => req._id.toString() === requestId || req.from.toString() === requestId
     );
     
     if (requestIndex === -1) {

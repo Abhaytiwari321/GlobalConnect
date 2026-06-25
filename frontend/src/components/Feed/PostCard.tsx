@@ -136,7 +136,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLike, onComment }) => {
           </div>
 
           {/* Comments List */}
-          {post.comments.map((comment) => (
+          {post.comments?.map((comment) => (
             <div key={comment.id} className="flex items-start space-x-3 mt-4">
               <img
                 src={comment.author.avatar}

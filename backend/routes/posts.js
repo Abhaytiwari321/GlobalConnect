@@ -23,24 +23,28 @@ router.get('/', auth, async (req, res) => {
 
     const total = await Post.countDocuments({ isActive: true });
 
+    const validPosts = posts.filter(post => post.author != null);
+
     res.json({
-      posts: posts.map(post => ({
+      posts: validPosts.map(post => ({
         id: post._id,
         author: post.author,
         content: post.content,
         image: post.image,
         likes: post.likeCount,
-        comments: post.comments.map(comment => ({
-          id: comment._id,
-          author: comment.author,
-          content: comment.content,
-          timestamp: comment.createdAt,
-          likes: comment.likes.length,
-        })),
+        comments: post.comments
+          .filter(comment => comment.author != null)
+          .map(comment => ({
+            id: comment._id,
+            author: comment.author,
+            content: comment.content,
+            timestamp: comment.createdAt,
+            likes: comment.likes.length,
+          })),
         shares: post.shareCount,
         timestamp: post.createdAt,
         isLiked: post.likes.some(
-          like => like.user.toString() === req.user._id.toString()
+          like => like.user && like.user.toString() === req.user._id.toString()
         ),
       })),
       pagination: {
@@ -70,6 +74,8 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 
     if (req.file) {
       postData.image = req.file.path;
+    } else if (req.body.image) {
+      postData.image = req.body.image;
     }
 
     const post = new Post(postData);

@@ -334,6 +334,10 @@ router.put('/profile', auth, upload.single('avatar'), async (req, res) => {
       skills: skills ? JSON.parse(skills) : [],
     };
 
+    if (req.body.experience) {
+      updateData.experience = JSON.parse(req.body.experience);
+    }
+
     if (req.file) {
       updateData.avatar = req.file.path;
     }

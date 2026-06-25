@@ -3,17 +3,19 @@ const API_BASE_URL = 'http://localhost:5000/api';
 // Get token from localStorage
 const getToken = () => localStorage.getItem('token');
 
-// API request helper
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const token = getToken();
   
+  const { headers, ...restOptions } = options;
+  const isFormData = options.body instanceof FormData;
+  
   const config: RequestInit = {
+    ...restOptions,
     headers: {
-      'Content-Type': 'application/json',
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
+      ...headers,
     },
-    ...options,
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);

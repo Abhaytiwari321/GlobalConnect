@@ -1,181 +1,90 @@
-// const mongoose = require('mongoose');
-
-// const companySchema = new mongoose.Schema({
-//   name: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//   },
-//   logo: {
-//     type: String,
-//     default: '',
-//   },
-//   coverImage: {
-//     type: String,
-//     default: '',
-//   },
-//   industry: {
-//     type: String,
-//     required: true,
-//   },
-//   size: {
-//     type: String,
-//     enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'],
-//     required: true,
-//   },
-//   location: {
-//     type: String,
-//     required: true,
-//   },
-//   description: {
-//     type: String,
-//     required: true,
-//   },
-//   website: {
-//     type: String,
-//     default: '',
-//   },
-//   founded: {
-//     type: Number,
-//   },
-//   specialties: [{
-//     type: String,
-//   }],
-//   employees: [{
-//     user: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: 'User',
-//     },
-//     role: {
-//       type: String,
-//       enum: ['admin', 'hr', 'employee'],
-//       default: 'employee',
-//     },
-//     joinedAt: {
-//       type: Date,
-//       default: Date.now,
-//     },
-//   }],
-//   followers: [{
-//     user: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: 'User',
-//     },
-//     followedAt: {
-//       type: Date,
-//       default: Date.now,
-//     },
-//   }],
-//   jobs: [{
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'Job',
-//   }],
-//   isVerified: {
-//     type: Boolean,
-//     default: false,
-//   },
-// }, { timestamps: true });
-
-// // Virtual for employee count
-// companySchema.virtual('employeeCount').get(function() {
-//   return this.employees.length;
-// });
-
-// // Virtual for follower count
-// companySchema.virtual('followerCount').get(function() {
-//   return this.followers.length;
-// });
-
-// module.exports = mongoose.model('Company', companySchema);
-
 import mongoose from 'mongoose';
+
+const reviewSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  anonymous: {
+    type: Boolean,
+    default: false
+  }
+}, { timestamps: true });
 
 const companySchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    unique: true,
+    required: [true, 'Company name is required'],
+    trim: true,
+    unique: true
   },
   logo: {
     type: String,
-    default: '',
+    default: 'https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400'
   },
   coverImage: {
     type: String,
-    default: '',
+    default: ''
   },
-  industry: {
+  about: {
     type: String,
-    required: true,
-  },
-  size: {
-    type: String,
-    enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'],
-    required: true,
-  },
-  location: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
+    required: [true, 'About description is required']
   },
   website: {
     type: String,
-    default: '',
+    default: ''
   },
-  founded: {
-    type: Number,
-  },
-  specialties: [{
+  industry: {
     type: String,
-  }],
-  employees: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    role: {
-      type: String,
-      enum: ['admin', 'hr', 'employee'],
-      default: 'employee',
-    },
-    joinedAt: {
-      type: Date,
-      default: Date.now,
-    },
-  }],
-  followers: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    followedAt: {
-      type: Date,
-      default: Date.now,
-    },
-  }],
-  jobs: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job',
-  }],
-  isVerified: {
-    type: Boolean,
-    default: false,
+    required: [true, 'Industry type is required']
   },
+  size: {
+    type: String,
+    default: '1-10 employees'
+  },
+  foundedYear: {
+    type: Number
+  },
+  location: {
+    type: String,
+    required: [true, 'Location is required']
+  },
+  reviews: [reviewSchema],
+  employees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  admins: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }]
 }, { timestamps: true });
 
-// Virtual for employee count
-companySchema.virtual('employeeCount').get(function () {
-  return this.employees.length;
+// Virtual to calculate average rating
+companySchema.virtual('averageRating').get(function () {
+  if (this.reviews.length === 0) return 0;
+  const total = this.reviews.reduce((sum, r) => sum + r.rating, 0);
+  return (total / this.reviews.length).toFixed(1);
 });
 
-// Virtual for follower count
-companySchema.virtual('followerCount').get(function () {
-  return this.followers.length;
-});
+companySchema.set('toJSON', { virtuals: true });
+companySchema.set('toObject', { virtuals: true });
 
 const Company = mongoose.model('Company', companySchema);
-
 export default Company;

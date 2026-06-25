@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Briefcase, Plus, Edit3 } from 'lucide-react';
 import { Experience } from '../../types';
 
 interface ExperienceSectionProps {
   experience: Experience[];
   isOwnProfile?: boolean;
+  onAddExperience?: (exp: any) => void;
 }
 
-const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, isOwnProfile = true }) => {
+const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, isOwnProfile = true, onAddExperience }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const [newExp, setNewExp] = useState({ title: '', company: '', duration: '', description: '', current: false });
+
+  const handleSave = () => {
+    if (newExp.title && newExp.company && onAddExperience) {
+      onAddExperience(newExp);
+      setIsAdding(false);
+      setNewExp({ title: '', company: '', duration: '', description: '', current: false });
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -15,13 +27,29 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, isOwn
           <Briefcase className="w-6 h-6 mr-3 text-emerald-600" />
           Experience
         </h2>
-        {isOwnProfile && (
-          <button className="flex items-center space-x-2 px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+        {isOwnProfile && !isAdding && (
+          <button 
+            onClick={() => setIsAdding(true)}
+            className="flex items-center space-x-2 px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+          >
             <Plus className="w-4 h-4" />
             <span className="font-medium">Add Experience</span>
           </button>
         )}
       </div>
+
+      {isAdding && (
+        <div className="mb-6 p-4 border border-emerald-100 bg-emerald-50 rounded-lg space-y-4">
+          <input type="text" placeholder="Job Title" className="w-full p-2 rounded border border-gray-300" value={newExp.title} onChange={e => setNewExp({...newExp, title: e.target.value})} />
+          <input type="text" placeholder="Company" className="w-full p-2 rounded border border-gray-300" value={newExp.company} onChange={e => setNewExp({...newExp, company: e.target.value})} />
+          <input type="text" placeholder="Duration (e.g. 2021 - Present)" className="w-full p-2 rounded border border-gray-300" value={newExp.duration} onChange={e => setNewExp({...newExp, duration: e.target.value})} />
+          <textarea placeholder="Description" className="w-full p-2 rounded border border-gray-300" value={newExp.description} onChange={e => setNewExp({...newExp, description: e.target.value})} />
+          <div className="flex justify-end space-x-2">
+            <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-gray-600">Cancel</button>
+            <button onClick={handleSave} className="px-4 py-2 bg-emerald-600 text-white rounded">Save</button>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         {experience.map((exp) => (

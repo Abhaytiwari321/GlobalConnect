@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Mail, UserPlus, MessageCircle, MoreHorizontal, Camera } from 'lucide-react';
 import { User } from '../../types';
 
@@ -7,14 +7,50 @@ interface ProfileHeaderProps {
   isOwnProfile?: boolean;
   onConnect?: () => void;
   onMessage?: () => void;
+  onUploadAvatar?: (file: File) => void;
+  onEditProfile?: (data: any) => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
   user, 
   isOwnProfile = true, 
   onConnect, 
-  onMessage 
+  onMessage,
+  onUploadAvatar,
+  onEditProfile
 }) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: user.name || '',
+    title: user.title || '',
+    company: user.company || '',
+    location: user.location || '',
+    bio: user.bio || '',
+    skills: user.skills ? user.skills.join(', ') : ''
+  });
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onUploadAvatar) {
+      onUploadAvatar(file);
+    }
+  };
+
+  const handleSave = () => {
+    if (onEditProfile) {
+      onEditProfile({
+        ...editData,
+        skills: editData.skills.split(',').map(s => s.trim()).filter(Boolean)
+      });
+      setIsEditing(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Cover Photo */}
@@ -36,9 +72,22 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               className="w-32 h-32 rounded-full border-4 border-white object-cover bg-white"
             />
             {isOwnProfile && (
-              <button className="absolute bottom-2 right-2 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors shadow-lg">
-                <Camera className="w-4 h-4" />
-              </button>
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  onClick={handleAvatarClick}
+                  className="absolute bottom-2 right-2 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors shadow-lg hover:scale-105"
+                  title="Upload profile picture"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+              </>
             )}
           </div>
 
@@ -70,62 +119,86 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           )}
 
           {isOwnProfile && (
-            <div className="mt-16">
-              <button className="px-6 py-2 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors font-medium">
-                Edit Profile
-              </button>
+            <div className="mt-16 space-x-2">
+              {isEditing ? (
+                <>
+                  <button onClick={() => setIsEditing(false)} className="px-6 py-2 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                    Save Profile
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => setIsEditing(true)} className="px-6 py-2 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors font-medium">
+                  Edit Profile
+                </button>
+              )}
             </div>
           )}
         </div>
 
         {/* User Info */}
         <div className="mt-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
-          <p className="text-xl text-gray-700 mb-3">{user.title}</p>
-          <p className="text-lg text-emerald-600 font-medium mb-4">{user.company}</p>
-          
-          <div className="flex items-center space-x-6 text-gray-600 mb-4">
-            <div className="flex items-center space-x-1">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm">{user.location}</span>
+          {isEditing ? (
+            <div className="space-y-4 max-w-2xl">
+              <input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} placeholder="Name" className="w-full p-2 border border-gray-300 rounded" />
+              <input type="text" value={editData.title} onChange={e => setEditData({...editData, title: e.target.value})} placeholder="Job Title" className="w-full p-2 border border-gray-300 rounded" />
+              <input type="text" value={editData.company} onChange={e => setEditData({...editData, company: e.target.value})} placeholder="Company" className="w-full p-2 border border-gray-300 rounded" />
+              <input type="text" value={editData.location} onChange={e => setEditData({...editData, location: e.target.value})} placeholder="Location" className="w-full p-2 border border-gray-300 rounded" />
+              <textarea value={editData.bio} onChange={e => setEditData({...editData, bio: e.target.value})} placeholder="Bio" className="w-full p-2 border border-gray-300 rounded h-24" />
+              <input type="text" value={editData.skills} onChange={e => setEditData({...editData, skills: e.target.value})} placeholder="Skills (comma separated)" className="w-full p-2 border border-gray-300 rounded" />
             </div>
-            <div className="flex items-center space-x-1">
-              <Mail className="w-4 h-4" />
-              <span className="text-sm">{user.email}</span>
-            </div>
-          </div>
-
-          {/* Connections Info */}
-          <div className="flex items-center space-x-6 mb-6">
-            <div>
-              <span className="font-semibold text-gray-900">{user.connections}</span>
-              <span className="text-gray-600 ml-1">connections</span>
-            </div>
-            {user.mutualConnections && (
-              <div>
-                <span className="font-semibold text-gray-900">{user.mutualConnections}</span>
-                <span className="text-gray-600 ml-1">mutual connections</span>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
+              <p className="text-xl text-gray-700 mb-3">{user.title}</p>
+              <p className="text-lg text-emerald-600 font-medium mb-4">{user.company}</p>
+              
+              <div className="flex items-center space-x-6 text-gray-600 mb-4">
+                <div className="flex items-center space-x-1">
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm">{user.location}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Mail className="w-4 h-4" />
+                  <span className="text-sm">{user.email}</span>
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Bio */}
-          <p className="text-gray-700 leading-relaxed mb-6">{user.bio}</p>
+              {/* Connections Info */}
+              <div className="flex items-center space-x-6 mb-6">
+                <div>
+                  <span className="font-semibold text-gray-900">{user.connections}</span>
+                  <span className="text-gray-600 ml-1">connections</span>
+                </div>
+                {user.mutualConnections && (
+                  <div>
+                    <span className="font-semibold text-gray-900">{user.mutualConnections}</span>
+                    <span className="text-gray-600 ml-1">mutual connections</span>
+                  </div>
+                )}
+              </div>
 
-          {/* Skills */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {user.skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium hover:bg-emerald-200 transition-colors cursor-pointer"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
+              {/* Bio */}
+              <p className="text-gray-700 leading-relaxed mb-6">{user.bio}</p>
+
+              {/* Skills */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {user.skills?.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium hover:bg-emerald-200 transition-colors cursor-pointer"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

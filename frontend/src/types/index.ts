@@ -11,6 +11,8 @@ export interface User {
   experience: Experience[];
   connections: number;
   isConnected?: boolean;
+  isPending?: boolean;
+  hasIncoming?: boolean;
   mutualConnections?: number;
 }
 
@@ -36,6 +38,8 @@ export interface Job {
   applicants: number;
   companyLogo: string;
   isApplied?: boolean;
+  responsibilities?: string[];
+  benefits?: string[];
 }
 
 export interface Post {
