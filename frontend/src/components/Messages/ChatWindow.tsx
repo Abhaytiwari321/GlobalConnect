@@ -23,7 +23,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, users }) => {
 
   // Initialize socket connection
   useEffect(() => {
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io('https://globalconnect-3.onrender.com');
 
     socketRef.current.emit('register', currentUser.id);
 
@@ -54,7 +54,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, users }) => {
     const fetchHistory = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:5000/api/messages/${selectedUser.id}`, {
+        const res = await fetch(`https://globalconnect-3.onrender.com/api/messages/${selectedUser.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -101,7 +101,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser, users }) => {
         const formData = new FormData();
         formData.append('image', selectedFile);
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/messages/upload', {
+        const res = await fetch('https://globalconnect-3.onrender.com/api/messages/upload', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
