@@ -57,14 +57,7 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Global Connect API is running!' });
 });
 
-// Serve frontend build in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(join(__dirname, "../frontend/dist")));
-
-  app.get("/(.*)", (req, res) => {
-    res.sendFile(join(__dirname, "../frontend/dist/index.html"));
-  });
-}
+// Frontend is served separately via Vercel in production
 
 // Error handling middleware
 app.use((err, req, res, next) => {
